@@ -10,19 +10,29 @@ class HashTableEntry:
 
 
 class HashTable:
-    """
-    A hash table that with `capacity` buckets
-    that accepts string keys
 
-    Implement this.
-    """
+    def __init__(self, length):
+        self.length = length
+        self.hash_table = [None]*self.length
+
+  
 
     def fnv1(self, key):
-        """
-        FNV-1 64-bit hash function
+        # these values come from algorithm authors
+        self.offset_basis = 14695981039346656037
+        self.prime = 1099511628211
+        # get bytes representation of key
+        bytes_representation = key.encode()
+        # algorithm starts by setting hash equal to offset basis
+        hash = self.offset_basis
+        # loop through bytes, multiply each times the prime above and
+        # then set hash equal to hash XOR byte - again, part of algorithm
+        for byte in bytes_representation:
+            hash *= self.prime
+            hash = hash ^ byte
+        # return hash
+        return hash
 
-        Implement this, and/or DJB2.
-        """
 
     def djb2(self, key):
         """
@@ -32,12 +42,11 @@ class HashTable:
         """
 
     def hash_index(self, key):
-        """
-        Take an arbitrary key and return a valid integer index
-        between within the storage capacity of the hash table.
-        """
-        #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        # set capacity to length of hash table set at initialization - this will be used to create index from hash
+        self.capacity = self.length
+        # return index, which is hash modulo length of table
+        return self.fnv1(key) % self.capacity
+        #return self.djb2(key) % self.capacity
 
     def put(self, key, value):
         """
@@ -47,6 +56,9 @@ class HashTable:
 
         Implement this.
         """
+        # set value to hash_table index, which is hashed key
+        self.hash_table[self.hash_index(key)] = value
+
 
     def delete(self, key):
         """
@@ -57,6 +69,11 @@ class HashTable:
         Implement this.
         """
 
+        if self.hash_table[self.hash_index(key)]:
+            self.hash_table[self.hash_index(key)] = None
+            return
+        return "Key not found"
+
     def get(self, key):
         """
         Retrieve the value stored with the given key.
@@ -65,6 +82,9 @@ class HashTable:
 
         Implement this.
         """
+        if self.hash_table[self.hash_index(key)] is not None:
+            return self.hash_table[self.hash_index(key)]
+        return None
 
     def resize(self):
         """
